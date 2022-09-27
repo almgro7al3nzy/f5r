@@ -1,0 +1,116 @@
+<!--<!DOCTYPE html>
+<head>
+    <meta charset="utf-8">
+    <title>채팅</title>
+    <link rel="stylesheet" href="/css/index.css">
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="/js/index.js"></script>
+</head>
+<body>
+    <div id="main">
+        <div id="chat">
+        </div>
+        <div>
+          <input type="text" id="test" placeholder="메시지를 입력해주세요..">
+          <button onclick="send()">전송</button>
+        </div>
+      </div>
+</body>
+</html>-->
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8"> 
+<title>Chatting_Web</title>
+  <link rel="stylesheet" href="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+  <script src="http://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/js/bootstrap.min.js"></script>
+  <script src = "https://cdn.rawgit.com/eligrey/FileSaver.js/5ed507ef8aa53d8ecfea96d96bc7214cd2476fd2/FileSaver.min.js"></script>
+  <!--<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>-->
+  <script src = "https://cdnjs.cloudflare.com/ajax/libs/html2canvas/0.5.0-beta4/html2canvas.js"></script>
+  <link href="http://localhost:4000/customEmoji.css" type="text/css" rel="stylesheet"/>
+ <script src="/socket.io/socket.io.js"></script>
+ <script>const socket = io();</script>
+</head>
+<body style = 'background-color : #2b2b2b'>
+<br/>
+<div class = "box" >
+    <div class = "chat">
+      <div id="msg">
+        <div class="notification-container" id="notification-container">
+          <p></p>
+        </div>
+      </div>
+
+      <div class="send">
+      <form id = "chatform" onsubmit="return false">
+        <div style="display: inline-block;"><input type="text" id="input_box" contenteditable="true" autocomplete="off"></div>
+        <div class = "emoji">
+          <img class="emoji_pickup" id="emoji_pickup_before" src="img/1f642.png">
+          <img class="emoji_pickup" id="emoji_pickup_after" src="img/1f600.png">
+        </div>
+        <input type = "submit" id="sendmsg"  class="btn btn-warning btn-sm" value="Send">
+         <!-- emoji popup div start -->
+        <div id="emoji_popup" style ="z-index : 1">
+          <div id="emoji_navigator" > 
+            <a href="#campus_emoji" id="campus" onclick="showEmoji(this)"><img style="margin-left: 6px" class="navigator" id="nav_people" src="img/campus2.png" /></a>
+            <a href="#kakao_emoji" id="kakaoFriends" onclick="showEmoji(this)"><img class="navigator" id="nav_kakao" src="img/kakao1.png"></a>
+          </div>
+          <div id = "emoji_wrapper">
+          <!-- emoji_wrapper div start-->
+          <div id="campus_emoji">         
+            <h5 style="text-align: center;">대학일기</h5>
+            <img class="emoji_list" id="campus1" src="img/campus1.png" />
+            <img class="emoji_list" id="campus2" src="img/campus2.png" />
+            <img class="emoji_list" id="campus3" src="img/campus3.png" />
+            <img class="emoji_list" id="campus4" src="img/campus4.png" />
+            <img class="emoji_list" id="campus5" src="img/campus5.png" />
+            <img class="emoji_list" id="campus6" src="img/campus6.png" />
+            <img class="emoji_list" id="campus7" src="img/campus7.png" />
+            <img class="emoji_list" id="campus8" src="img/campus8.png" />
+            <img class="emoji_list" id="campus9" src="img/campus9.png" />
+            <img class="emoji_list" id="campus10" src="img/campus10.png" /> 
+          </div>
+          <div id="kakao_emoji">
+            <h5 style="text-align: center;">카카오 프렌즈</h5>
+            <img class="emoji_list" id="kakao1" src="img/kakao1.png" />
+            <img class="emoji_list" id="kakao2" src="img/kakao2.png" />        
+            <img class="emoji_list" id="kakao3" src="img/kakao3.png" /> 
+            <img class="emoji_list" id="kakao4" src="img/kakao4.png" /> 
+            <img class="emoji_list" id="kakao5" src="img/kakao5.png" /> 
+            <img class="emoji_list" id="kakao6" src="img/kakao6.png" /> 
+            <img class="emoji_list" id="kakao7" src="img/kakao7.png" /> 
+            <img class="emoji_list" id="kakao8" src="img/kakao8.png" /> 
+            <img class="emoji_list" id="kakao9" src="img/kakao9.png" /> 
+          </div>
+          </div>
+          <!-- emoji_wrapper div end-->  
+        </div>
+          <!-- emoji popup div end -->
+    
+        <div id="custom_emoji" style ="z-index : 2">
+          <div id = "menu">
+            <div id = "menu_bnt">
+              <button class = "button btn-warning" id = "add" type = "button">텍스트 삽입</button>
+              <form id = "upload" method = "post" enctype="multipart/form-data">
+                <button class = "button btn-warning" id = "save" type = "button">보내기</button>
+              </form>
+            </div>
+            <button id = "close_emo" type = "button" onclick ='closeEmoji()'><img src="img/cancel.png" style = "width : 12px; height:12px" /></button>
+          </div>
+          <div id = "emoji_div" style="filter:alpha(opacity=0); z-index:0">
+            <div id="sample10" style="display:inline-block; position:absolute"></div>
+            <div id="sample30" style="display:inline-block; position:absolute"></div>
+            <div id = "user_text" style="display:inline-block; position:absolute"><span id="spantxt" ></span></div> <!--세로쓰기 테스트-->
+            <div id ="date" style="display:inline-block; position:absolute"><span id = "spandate"></span></div>
+          </div>
+          
+        </div>
+      
+    </form>
+    </div>
+  </div>
+</div>
+</body>
+<script type="text/javascript" src="http://localhost:4000/customEmoji.js"></script>
+</html>

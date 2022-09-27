@@ -1,21 +1,22 @@
 {
-  "name": "webcage",
+  "name": "nodejs_chat",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "nodemon index"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "dev": "nodemon index.js"
   },
-  "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "express": "^4.17.1",
-    "moment": "^2.29.1",
-    "socket.io": "^3.1.2"
-  },
-  "devDependencies": {
-    "nodemon": "^2.0.7"
+    "cheerio": "^1.0.0-rc.10",
+    "express": "^4.17.2",
+    "multer": "^1.4.4",
+    "multer-s3": "^2.10.0",
+    "ngrok": "^4.3.0",
+    "nodemon": "^2.0.15",
+    "request": "^2.88.2",
+    "socket.io": "^4.4.1"
   }
 }
