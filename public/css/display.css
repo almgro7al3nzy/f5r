@@ -1,0 +1,13 @@
+@import "__base.css";
+
+.game {
+  display: none;
+}
+
+.errors {
+  display: none;
+}
+
+.endgame {
+  display: none;
+}
