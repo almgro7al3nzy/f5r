@@ -13,7 +13,7 @@ const checkRoomExists = (roomId) => {
     return roomSet.has(roomId); 
 }
 
-const deQRoom = () => { //removes room created before 12 hours 
+const deQRoom = () => { //يزيل الغرفة التي تم إنشاؤها قبل 12 ساعة
     if(roomQ.length === 0){
         return; 
     }
