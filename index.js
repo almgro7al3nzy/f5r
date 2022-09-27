@@ -1,167 +1,117 @@
-const WebSocket = require("ws");
-const mysql = require("mysql");
-const ws = new WebSocket.Server({port:8008});
-let ALL_USER=[];
-let ALL_ROOM=[];
-ws.on("connection",function connect(websocket,req){
-   websocket.on("message",function incoming(message){
-      console.log(JSON.parse(message));
-      message=JSON.parse(message);
-      switch (message.code){
-         case "member_login":
-            login(message.memberCode,message.memberAlias);
-            break;
-         case "create_room":
-            message.members.sort(function (a,b){
-               return a.memberCode-b.memberCode;
-            });
-            ROOM_ID=createRoom(message.members);
-            break;
-         case "send_chat":
-            sendChat(message.room_id,message.send_memberCode);
-            break;
-         case "room_member_insert":  //방에 회원 추가
-            roomMemberInsert(message.room_id, message.members);
-            break;
-      }
-   });
-   function roomMemberInsert(room_id, members) {
-      let ROOM_ID = "";
-      //DATABASE에 room 정보를 insert
-      const conn = mysql.createConnection({
-         host: "localhost",
-         user: "root",
-         password: "",
-         database: "kakaotalk"
-      });
+const express = require('express');
+const fs =require('fs')
+const app = require('express')();
+const http = require('http').createServer(app);
+const io = require('socket.io')(http);
+const config= require('./config/key')
+let request = require('request');
+let cheerio = require('cheerio')
 
-      let sql = " select members, members_name from room where roomCode='" +room_id+ "' ";
-      conn.query(sql, function(err, rows, fields){
-         if(rows && rows.length > 0) { //동일한 회원들이 참여하는 방이 이미 존재하는 경우
-            let this_members = rows[0].members;
-            let this_members_name = rows[0].members_name;
-
-            let this_members_arr = this_members.split(",");
-            let this_members_name_arr = this_members_name.split(",");
-
-            for(let q=0; q < this_members_arr.length; q++) {
-               let memberCode = this_members_arr[q];
-               let memberAlias = this_members_name_arr[q];
-
-               let tmpMember = {"memberCode": memberCode,"memberAlias": memberAlias}
-               members.push(tmpMember);
+const $url=config.URL;
+const $KEY=config.KEY;
+const $station='233001450'
+const $api_url=$url+'?serviceKey='+$KEY+'&stationId='+$station;
+console.log($api_url)
+request($api_url,function(err,res,body){
+    $ = cheerio.load(body);
+    $('busArrivalList').each(function(idx){
+        let no1=$(this).find('plateNo1').text();
+        let no2=$(this).find('plateNo2').text();
+        console.log(`도착 예정 버스: ${no1}, 다음 도착 버스: ${no2 ? no2 : '---'}`);
+    })
+})
+let rooms = [];
+app.use('/css',express.static('./client/css'))
+app.use('/js',express.static('./client/js'))
+app.get('/',(req,res)=>{
+    fs.readFile('./client/index.html',function(err,data){
+        if(err){
+            res.send(err)
+        }else{
+            res.writeHead(200,{'Content-Type':'text/html'})
+            res.write(data)
+            res.end()
+        }
+    })
+})
+/*app.get('/', (req, res) => {
+    res.sendFile(__dirname + '/front.html');
+});*/
+let socketList = [];
+io.on('connection', (socket)=>{
+    socketList.push(socket);
+    socket.on('newUser', function(name){
+        console.log(name+' 님이 접속하였습니다.')
+        socket.name=name
+        socket.emit('update',{type:'connect',name:'SERVER',message:name+'님이 접속하였습니다.'})
+    });
+    socket.on('message', function(data){
+        data.name=socket.name
+        console.log("전달된 메시지:",data)
+        socket.broadcast.emit('update',data)
+    });
+    socket.on('image', (data)=>{
+        socketList.forEach(function(item, i) {
+            console.log(item.id);
+            if (item != socket) {
+                item.emit('image', data);
             }
+        }); 
+    })
+    socket.on('disconnect', function () {
+        console.log(socket.name+'user disconnected');
+        socket.broadcast.emit('update',{type:'disconnect',name:'SERVER',message:socket.name+'님이 나가셨습니다.'});
+    });
+});
+app.use('/image', require('./multer'));
+/*io.on('connection', (socket)=>{
+    socket.on('request_message', (msg) => {
+        // response_message로 접속중인 모든 사용자에게 msg 를 담은 정보를 방출한다.
+        io.emit('response_message', msg);
+    });
+    // 방참여 요청
+    socket.on('req_join_room', async (msg) => {
+        let roomName = 'Room_' + msg;
+        console.log(roomName)
+        if(!rooms.includes(roomName)) {
+            rooms.push(roomName);
+        }else{     
+        }
+        console.log(rooms)
+        socket.join(roomName);
+        io.to(roomName).emit('noti_join_room', "방에 입장하였습니다.");
+    });
+    // 채팅방에 채팅 요청
+    socket.on('req_room_message', async(msg) => {
+        console.log(msg)
+        //let userCurrentRoom = getUserCurrentRoom(socket);
+        //console.log(userCurrentRoom)
+        io.to("Room_"+msg.roomName).emit('noti_room_message', msg.message);
+    });
+    socket.on('disconnect', async () => {
+        console.log('user disconnected');
+    });
+});*/
 
-            members.sort(function(a,b){  //memberCode 기준으로 오름차순 정렬 (1,2,3,4...10)
-               return a.memberCode - b.memberCode;
-            });
+/*(async function(){
+})();
 
-            let all_member = "";
-            let all_member_name = "";
-            members.forEach(function(element, index){
-               if(!all_member) {
-                  all_member = element.memberCode
-                  all_member_name = element.memberAlias
-               }
-               else {
-                  all_member += "," + element.memberCode
-                  all_member_name += "," + element.memberAlias
-                  //3,2,1,4
-               }
-            });
-
-            sql = " update room set members='"+all_member+"', members_name='"+all_member_name+"' where roomCode='"+room_id+"' ";
-            conn.query(sql, function(err){console.log(err);});
-
-            ALL_ROOM.forEach(function(element, index) {
-               if(element.id == room_id) {  //맞는 방 찾기
-                  element.members = members;
-               }
-            });
-
-            let data = {"code": "room_member_inserted", "room_id": room_id, "members": members};
-            sendMessage(data);
-         }
-      });
-   }
-   function login(memberCode,memberAlias){
-      let member_data={
-         "memberCode":memberCode,
-         "memberAlias":memberAlias,
-         "ws":websocket
-      };
-      ALL_USER.push(member_data);
-      console.log("Login OK");
-   }
-   function createRoom(members){
-      let ROOM_ID="";
-      const conn=mysql.createConnection({
-         host:"localhost",
-         user:"",
-         password:"",
-         database:""
-      });
-      let all_member="";
-      members.forEach(function (element,index){
-         if(!all_member){
-            all_member=element.memberCode
-         }else{
-            all_member+=","+element.memberCode
-         }
-      });
-      let sql="select roomCode from room where members='"+all_member+"'";
-      conn.query(sql,function (err,rows,fields){
-         if(rows && rows.length>0){
-            ROOM_ID=rows[0].roomCode;
-         }else{
-            sql="INSERT INTO room(members) values('"+all_member+"')";
-            conn.query(sql,function(){});
-            sql="select max(roomCode) as roomCode from room";
-            conn.query(sql,function(err,rows,fields){
-               ROOM_ID=rows[0].roomCode;
-            });
-         }
-         conn.end();
-         createRoomStep2(ROOM_ID,members);
-         return ROOM_ID;
-      });
-
-   }
-   function createRoomStep2(t_ROOM_ID,t_members){
-      let room_data={
-         "id":t_ROOM_ID,
-         "members":t_members
-      }
-      let findSameRoomid = ALL_ROOM.filter(function (element){
-         return element.id == t_ROOM_ID;
-      });
-      if(findSameRoomid.length==0){
-         ALL_ROOM.push(room_data);
-      }
-      console.log("createRoom OK");
-      sendRoomInfo(t_ROOM_ID);
-   }
-   function sendRoomInfo(t_ROOM_ID){
-      let data={"code":"send_roominfo","room_id":t_ROOM_ID};
-      sendMessage(data);
-      console.log("sendRoomInfo OK");
-   }
-   function sendMessage(msg){
-      websocket.send(JSON.stringify(msg));
-   }
-   function sendChat(room_id,memberCode){
-      ALL_ROOM.forEach(function (element,index){
-         if(element.id==room_id){
-            element.members.forEach(function(member,memberindex){
-               ALL_USER.forEach(function (user,userindex){
-                  if(member.memberCode==user.memberCode){
-                     let data={"code":"arrive_new_message","room_id":"room_id"};
-                     user.ws.send(JSON.stringify(data));
-                     console.log("arrive_new_message_OK");
-                  }
-               })
-            })
-         }
-      })
-   }
+function getUserCurrentRoom(socket){
+    let currentRoom = '';
+    //console.log(socket)
+    let socketRooms = Object.keys(socket.rooms);
+    console.log(socketRooms)
+    for( let i = 0 ; i < socketRooms.length; i ++ ){
+        if(socketRooms[i].indexOf('Room_') !== -1){
+            currentRoom = socketRooms[i];
+            break;
+        } 
+    }
+    return currentRoom;
+}*/
+const port = process.env.PORT || 5000
+http.listen(port, () => {
+    var dir = './uploadedFiles';
+  if (!fs.existsSync(dir)) fs.mkdirSync(dir);
+  console.log(`Server Listening on ${port}`)
 });
