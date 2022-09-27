@@ -34,9 +34,9 @@ app.get('/',(req,res)=>{
         }
     })
 })
-/*app.get('/', (req, res) => {
+app.get('/', (req, res) => {
     res.sendFile(__dirname + '/front.html');
-});*/
+})
 let socketList = [];
 io.on('connection', (socket)=>{
     socketList.push(socket);
@@ -64,7 +64,7 @@ io.on('connection', (socket)=>{
     });
 });
 app.use('/image', require('./multer'));
-/*io.on('connection', (socket)=>{
+io.on('connection', (socket)=>{
     socket.on('request_message', (msg) => {
         // response_message로 접속중인 모든 사용자에게 msg 를 담은 정보를 방출한다.
         io.emit('response_message', msg);
@@ -84,21 +84,21 @@ app.use('/image', require('./multer'));
     // 채팅방에 채팅 요청
     socket.on('req_room_message', async(msg) => {
         console.log(msg)
-        //let userCurrentRoom = getUserCurrentRoom(socket);
-        //console.log(userCurrentRoom)
+        let userCurrentRoom = getUserCurrentRoom(socket);
+        console.log(userCurrentRoom)
         io.to("Room_"+msg.roomName).emit('noti_room_message', msg.message);
     });
     socket.on('disconnect', async () => {
         console.log('user disconnected');
     });
-});*/
+});
 
-/*(async function(){
+(async function(){
 })();
 
 function getUserCurrentRoom(socket){
     let currentRoom = '';
-    //console.log(socket)
+    console.log(socket)
     let socketRooms = Object.keys(socket.rooms);
     console.log(socketRooms)
     for( let i = 0 ; i < socketRooms.length; i ++ ){
@@ -108,7 +108,7 @@ function getUserCurrentRoom(socket){
         } 
     }
     return currentRoom;
-}*/
+}
 const port = process.env.PORT || 5000
 http.listen(port, () => {
     var dir = './uploadedFiles';
