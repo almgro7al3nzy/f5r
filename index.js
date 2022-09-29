@@ -54,8 +54,7 @@ socket.on('messagedetection', (senderNickname,messageContent) => {
 
 
 
-server.listen(3000,()=>{
-
-console.log('Node app is running on port 3000');
-
+server.listen(app.get('port'), function(){
+    console.log("Server is now running...");
+    console.log("Port is on", app.get('port'))
 });
