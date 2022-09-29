@@ -1,8 +1,9 @@
-const express = require('express'),
-http = require('http'),
-app = express(),
-server = http.createServer(app),
-io = require('socket.io').listen(server);
+const express = require('express');
+
+var app = express();
+var server = require('http').Server(app);
+var io = require('socket.io')(server);
+
 app.get('/', (req, res) => {
 
 res.send('Chat Server is running on port 3000')
