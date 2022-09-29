@@ -42,8 +42,6 @@ socket.on('messagedetection', (senderNickname,messageContent) => {
 });
 
 
-
-});
 server.listen(app.get('port'), function(){
     console.log("Server is now running...");
     console.log("Port is on", app.get('port'))
