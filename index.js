@@ -12,6 +12,13 @@ const twilioObj = {
     cred : null 
 }
 
+io.sockets.on('connection', function (socket) {
+  console.log('user connected!');
+
+  socket.on('foo', function (data) {
+    console.log('here we are in action event and data is: ' + data);
+  });
+});
 // تستخدم الدردشة الصوتية بدوره الخادم ، غير مطلوب محليًا
 if(process.env.USE_TWILIO==="yes") { 
     const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
