@@ -8,6 +8,7 @@ app.get('/', (req, res) => {
 res.send('Chat Server is running on port 3000')
 });
 io.on('connection', (socket) => {
+app.use(express.static(__dirname + '/public'));
 
 console.log('user connected')
 
