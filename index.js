@@ -148,7 +148,7 @@ io.on('connection', (socket) => {
         if (addedUser){
             --numUsers;
 
-            // echo globally that this client has left
+            // صدى عالميًا أن هذا العميل قد غادر
             socket.broadcast.emit('user left', {
                 username: socket.username,
                 numUsers: numUsers
