@@ -1,0 +1,24 @@
+#messages-grid::-webkit-scrollbar-track {
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  border-radius: 10px;
+  background-color: #2f3136;
+}
+
+#messages-grid::-webkit-scrollbar {
+  width: 12px;
+  background-color: #2f3136;
+}
+
+#messages-grid::-webkit-scrollbar-thumb {
+  border-radius: 10px;
+  -webkit-box-shadow: inset 0 0 6px rgba(0, 0, 0, 0.3);
+  background-color: #202225;
+}
+
+#messages-grid {
+  height: 87%;
+  overflow-y: auto;
+  background-color: #36393f;
+  padding: 30px;
+  padding-left: 50px;
+}
