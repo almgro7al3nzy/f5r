@@ -1,12 +1,20 @@
-const express = require('express'),
-http = require('http'),
-app = express(),
-server = http.createServer(app),
-io = require('socket.io').listen(server);
-app.get('/', (req, res) => {
+const express = require('express');
 
-res.send('Chat Server is running on port 3000')
-});
+var app = express();
+var server = require('http').Server(app);
+var io = require('socket.io')(server);
+
+const general = io.of("/general");
+const football = io.of("/football");
+const basketball = io.of("/basketball");
+const abbas = io.of("/abbas");
+var people = {};
+
+
+app.set('port', (process.env.PORT || 3000));
+
+app.use(express.static(__dirname + '/public'));
+
 io.on('connection', (socket) => {
 
 console.log('user connected')
