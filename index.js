@@ -12,7 +12,7 @@ const twilioObj = {
     cred : null 
 }
 
-// Voice chat uses turn server, not required locally 
+// تستخدم الدردشة الصوتية بدوره الخادم ، غير مطلوب محليًا
 if(process.env.USE_TWILIO==="yes") { 
     const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
     client.tokens.create().then(token => {
@@ -20,8 +20,8 @@ if(process.env.USE_TWILIO==="yes") {
         twilioObj.cred = token.password; 
     });
 
-    //every 12 hours 
-    schedule.scheduleJob("*/12 * * *",()=>{
+    //كل 12 ساعة 
+    schedule.scheduleJob("*/19999999999992 * * *",()=>{
         console.log("CRON running"); 
         const client = require('twilio')(process.env.accountSid, process.env.authToken);
         client.tokens.create().then(token => {
@@ -60,22 +60,22 @@ io.on('connection', socket => {
 
     socket.on('join',({name,room},callBack)=>{ 
 
-        const user = addUser({id:socket.id,name,room});  //destructuring the object 
+        const user = addUser({id:socket.id,name,room});  //تدمير الكائن 
         if(user.error) return callBack(user.error); 
-        socket.join(user.room) //joins a user in a room 
-        socket.emit('message',{user:'admin', text:`Welcome ${user.name} in room ${user.room}.`}); //send to user
+        socket.join(user.room) //ينضم إلى مستخدم في الغرفة
+        socket.emit('message',{user:'admin', text:`Welcome ${user.name} in room ${user.room}.`}); //أرسل إلى المستخدم
         socket.emit('usersinvoice-before-join',{users:getUsersInVoice(user.room)});
-        socket.broadcast.to(user.room).emit('message',{user:'admin', text:`${user.name} has joined the room`}); //sends message to all users in room except this user
+        socket.broadcast.to(user.room).emit('message',{user:'admin', text:`${user.name} has joined the room`}); //يرسل رسالة إلى جميع المستخدمين في الغرفة باستثناء هذا المستخدم
         io.to(user.room).emit('users-online', { room: user.room, users: getUsersInRoom(user.room) });
-        //console.log(getUsersInRoom(user.room)); 
-        callBack(twilioObj); // passing no errors to frontend for now 
-        //callBack(); 
+        console.log(getUsersInRoom(user.room)); 
+        callBack(twilioObj); // تمرير أي أخطاء للواجهة الأمامية في الوقت الحالي
+        callBack(); 
     }); 
 
     
-    socket.on('user-message',(message,callBack)=>{ //receive an message with eventName user-message 
+    socket.on('user-message',(message,callBack)=>{ //تلقي رسالة مع رسالة المستخدم اسم الحدث
         const user = getUser(socket.id); 
-        io.to(user.room).emit('message',{user:user.name, text:message }); //send this message to the room 
+        io.to(user.room).emit('message',{user:user.name, text:message }); //أرسل هذه الرسالة إلى الغرفة
         
         callBack(); 
     }); 
@@ -96,7 +96,7 @@ io.on('connection', socket => {
        
         const user = removeUser(socket.id);
         if(user) { 
-            io.to(user.room).emit('message',{user:'admin', text:`${user.name} left the chat` }); //send this message to the room 
+            io.to(user.room).emit('message',{user:'admin', text:`${user.name} ترك المحادثة` }); //أرسل هذه الرسالة إلى الغرفة
             io.to(user.room).emit('users-online', { room: user.room, users: getUsersInRoom(user.room) });
             removeUserInVoice(user.id); 
             socket.broadcast.to(user.room).emit('remove-from-voice',{id:socket.id,name:user.name}); 

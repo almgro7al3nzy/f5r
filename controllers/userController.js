@@ -22,7 +22,7 @@ const removeUser = (id) => {
     if(index !== -1) return users.splice(index, 1)[0];
 }
 
-// const getUser = (id) => users.find((user) => user.id === id);
+ const getUser = (id) => users.find((user) => user.id === id);
 const getUser = (id) => {
     const checkUser = (user)=>{ 
         return user.id === id; 
@@ -40,7 +40,7 @@ const getUsersInRoom = (room) => {
     if(!filteredArray.length) {
         return []; 
     }
-    //const arr = filteredObjects.map((user) => user.name); 
+    const arr = filteredObjects.map((user) => user.name); 
     var list = filteredArray;//.map((obj) => obj.name); 
     return list; 
 } 
