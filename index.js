@@ -1,163 +1,113 @@
-const express = require('express');
+require('dotenv').config()
 
-var app = express();
-var server = require('http').Server(app);
-var io = require('socket.io')(server);
-
-const general = io.of("/general");
-const football = io.of("/football");
-const basketball = io.of("/basketball");
-const abbas = io.of("/abbas");
-var people = {};
+const express = require("express");   
+const socketio = require("socket.io"); 
+const http = require("http");
+const { ExpressPeerServer } = require('peer');
 
 
-app.set('port', (process.env.PORT || 3000));
+const twilioObj = {
+    username : null,
+    cred : null 
+}
 
-app.use(express.static(__dirname + '/public'));
-
-var generalTotalUser = 0;
-var footballTotalUser = 0;
-var basketballTotalUser = 0;
-let numUsers = 0;
-
-
-general.on('connection', function (socket) {
-
-    username = socket.handshake.query['nickname'];
-    people[socket.id] = username;
-
-    socket.on('join', function(msg){
-        footballTotalUser = generalTotalUser + 1;
-        console.log(username + ": has joined to general channel");
-        console.log("channel user count:" + generalTotalUser);
-        socket.broadcast.emit('join', {username: username, count: generalTotalUser});
-        socket.emit('activeUser', {count: generalTotalUser});
-    });
-
-    socket.on('disconnect', function(msg){
-        generalTotalUser = generalTotalUser - 1;
-        console.log( people[socket.id] + ": has left to general channel");
-        console.log("channel user count:" + generalTotalUser);
-        socket.broadcast.emit('left', {username:  people[socket.id], count: generalTotalUser});
-    });
-
-    socket.on('new_message', function(msg){
-        console.log(msg.username + " has send message: " + msg.message);
-        socket.broadcast.emit('new_message', {username: msg.username, message: msg.message});
-    });
+// Comment if not required => below code is used to change creadentials for TURN server 
+//======================================================================================
+const client = require('twilio')(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN);
+client.tokens.create().then(token => {
+    twilioObj.username = token.username;
+    twilioObj.cred = token.password; 
 });
-
-football.on('connection', function (socket) {
-
-    username = socket.handshake.query['username'];
-    people[socket.id] = username;
-
-    socket.on('join', function(msg){
-        footballTotalUser = footballTotalUser + 1;
-        console.log(username + ": has joined to general channel");
-        console.log("channel user count:" + footballTotalUser);
-        socket.broadcast.emit('join', {username: username, count: footballTotalUser});
-        socket.emit('activeUser', {count: footballTotalUser});
+const schedule = require('node-schedule');
+let rule = new schedule.RecurrenceRule();
+rule.hour = 12;
+schedule.scheduleJob(rule,()=>{
+    console.log("running"); 
+    const client = require('twilio')(process.env.accountSid, process.env.authToken);
+    client.tokens.create().then(token => {
+        twilioObj.username = token.username;
+        twilioObj.cred = token.password; 
     });
+})
+//========================================================================
 
-    socket.on('disconnect', function(msg){
-        footballTotalUser = footballTotalUser - 1;
-        console.log( people[socket.id] + ": has left to general channel");
-        console.log("channel user count:" + footballTotalUser);
-        socket.broadcast.emit('left', {username:  people[socket.id], count: footballTotalUser});
-    });
 
-    socket.on('new_message', function(msg){
-        console.log(msg.username + " has send message: " + msg.message);
-        socket.broadcast.emit('new_message', {username: msg.username, message: msg.message});
-    });
+const cors = require('cors');
+const app = express(); 
+
+const router = require("./controllers/chatController");
+const server = http.createServer(app);
+const io = socketio(server); 
+
+app.use(cors());
+app.use(router); 
+
+const peerServer = ExpressPeerServer(server, {
+    debug: true,
+    path: '/'
 });
+app.use('/peerjs', peerServer);
 
-basketball.on('connection', function (socket) {
+const { 
+    addUser,removeUser,getUser,getUsersInRoom,
+    getUsersInVoice, addUserInVoice, removeUserInVoice 
+} = require("./controllers/userController"); 
 
-    username = socket.handshake.query['username'];
-    people[socket.id] = username;
+io.on('connection', socket => { 
 
-    socket.on('join', function(msg){
-        basketballTotalUser = basketballTotalUser + 1;
-        console.log(username + ": has joined to general channel");
-        console.log("channel user count:" + basketballTotalUser);
-        socket.broadcast.emit('join', {username: username, count: basketballTotalUser});
-        socket.emit('activeUser', {count: basketballTotalUser});
-    });
+    socket.on('join',({name,room},callBack)=>{ 
 
-    socket.on('disconnect', function(msg){
-        basketballTotalUser = basketballTotalUser - 1;
-        console.log( people[socket.id] + ": has left to general channel");
-        console.log("channel user count:" + basketballTotalUser);
-        socket.broadcast.emit('left', {username:  people[socket.id], count: basketballTotalUser});
-    });
+        const user = addUser({id:socket.id,name,room});  //destructuring the object 
+        if(user.error) return callBack(user.error); 
+        socket.join(user.room) //joins a user in a room 
+        socket.emit('message',{user:'admin', text:`Welcome ${user.name} in room ${user.room}.`}); //send to user
+        socket.emit('usersinvoice-before-join',{users:getUsersInVoice(user.room)});
+        socket.broadcast.to(user.room).emit('message',{user:'admin', text:`${user.name} has joined the room`}); //sends message to all users in room except this user
+        io.to(user.room).emit('users-online', { room: user.room, users: getUsersInRoom(user.room) });
+        //console.log(getUsersInRoom(user.room)); 
+        callBack(twilioObj); // passing no errors to frontend for now 
+        //callBack(); 
+    }); 
 
-    socket.on('new_message', function(msg){
-        console.log(msg.username + " has send message: " + msg.message);
-        socket.broadcast.emit('new_message', {username: msg.username, message: msg.message});
-    });
-});
+    
+    socket.on('user-message',(message,callBack)=>{ //receive an message with eventName user-message 
+        const user = getUser(socket.id); 
+        io.to(user.room).emit('message',{user:user.name, text:message }); //send this message to the room 
+        
+        callBack(); 
+    }); 
 
-io.on('connection', (socket) => {
-    let addedUser = false;
+    socket.on('join-voice',({name,room},callBack)=>{
+        io.to(room).emit('add-in-voice',{id:socket.id,name:name}); 
+        addUserInVoice({id:socket.id,name,room}); 
+        callBack(); 
+    }); 
+    socket.on('leave-voice',({name,room},callBack)=>{
 
-    // when the client emits 'new message', this listens and executes
-    socket.on('new message', (data) => {
-        // we tell the client to execute 'new message'
-        socket.broadcast.emit('new message', {
-          username: socket.username,
-          message: data
-        });
-    });
-    //console.log(socket.id, "a user connected to server!");
+        io.to(room).emit('remove-from-voice',{id:socket.id,name:name}); 
+        removeUserInVoice(socket.id); 
+        callBack(); 
+    }); 
 
-    // when the client emits 'add user', this listens and executes
-    socket.on('add user', (username) => {
-        if (addedUser) return;
-
-        // we store the username in the socket session for this client
-        socket.username = username;
-        ++numUsers;
-        addedUser = true;
-        socket.emit('login', {
-          numUsers: numUsers
-        });
-        // echo globally (all clients) that a person has connected
-        socket.broadcast.emit('user joined', {
-          username: socket.username,
-          numUsers: numUsers
-        });
-    });
-
-    // when the client emits 'typing', we broadcast it to others
-      socket.on('typing', () => {
-        socket.broadcast.emit('typing', {
-          username: socket.username
-        });
-      });
-
-      // when the client emits 'stop typing', we broadcast it to others
-      socket.on('stop typing', () => {
-        socket.broadcast.emit('stop typing', {
-          username: socket.username
-        });
-      });
-
-    socket.on('disconnect', function () {
-        if (addedUser){
-            --numUsers;
-
-            // echo globally that this client has left
-            socket.broadcast.emit('user left', {
-                username: socket.username,
-                numUsers: numUsers
-            });
+    socket.on('disconnect', () => {
+       
+        const user = removeUser(socket.id);
+        if(user) { 
+            io.to(user.room).emit('message',{user:'admin', text:`${user.name} left the chat` }); //send this message to the room 
+            io.to(user.room).emit('users-online', { room: user.room, users: getUsersInRoom(user.room) });
+            removeUserInVoice(user.id); 
+            socket.broadcast.to(user.room).emit('remove-from-voice',{id:socket.id,name:user.name}); 
         }
+        //console.log("User left"); 
     });
+    
+
 });
 
-server.listen(app.get('port'), function(){
-    console.log("Server is now running...");
-    console.log("Port is on", app.get('port'))
+
+
+
+const PORT = process.env.PORT || 5000; 
+server.listen(PORT, ()=>{
+    console.log(`Server started on port ${PORT}`); 
 });
