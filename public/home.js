@@ -24,6 +24,17 @@ function startVoiceChat() {
     });
 }
 
+function stopVoiceChat() {
+    voiceChat.start((err) => {
+        if(err) {
+            return console.log("err")
+        } 
+
+        console.log("off")
+        alert("started")
+    });
+}
+
 function VoiceChat(socket, recordTime, callbackOnReceiveVoiceData) {
     this.recordTime = recordTime;
     this.audioChunks = [];
