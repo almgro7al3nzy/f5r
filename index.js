@@ -80,6 +80,8 @@ io.on('connection', (socket) => {
                 username: socket.username,
                 numUsers: numUsers
             });
+			        socket.emit('activeUser');
+
         }
     });
 });
