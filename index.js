@@ -18,6 +18,10 @@ const football = io.of("/football");
 const basketball = io.of("/18");
 var people = {};
 
+let generalTotalUser = 0;
+let footballTotalUser = 0;
+let basketballTotalUser = 0;
+
 let numUsers = 0;
 
 io.on('connection', (socket) => {
@@ -48,8 +52,6 @@ io.on('connection', (socket) => {
         socket.broadcast.emit('user joined', {
           username: socket.username,
           numUsers: numUsers
-		  socket.emit('activeUser', {count: generalTotalUser});
-
         });
     });
 
