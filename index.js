@@ -31,16 +31,16 @@ general.on('connection', function (socket) {
 
     socket.on('join', function(msg){
         footballTotalUser = generalTotalUser + 1;
-        console.log(username + ": has joined to general channel");
-        console.log("channel user count:" + generalTotalUser);
+        console.log(username + ": has joined to general room");
+        console.log("room user count:" + generalTotalUser);
         socket.broadcast.emit('join', {username: username, count: generalTotalUser});
         socket.emit('activeUser', {count: generalTotalUser});
     });
 
     socket.on('disconnect', function(msg){
         generalTotalUser = generalTotalUser - 1;
-        console.log( people[socket.id] + ": has left to general channel");
-        console.log("channel user count:" + generalTotalUser);
+        console.log( people[socket.id] + ": has left to general room");
+        console.log("room user count:" + generalTotalUser);
         socket.broadcast.emit('left', {username:  people[socket.id], count: generalTotalUser});
     });
 
@@ -57,16 +57,16 @@ football.on('connection', function (socket) {
 
     socket.on('join', function(msg){
         footballTotalUser = footballTotalUser + 1;
-        console.log(username + ": has joined to general channel");
-        console.log("channel user count:" + footballTotalUser);
+        console.log(username + ": has joined to general room");
+        console.log("room user count:" + footballTotalUser);
         socket.broadcast.emit('join', {username: username, count: footballTotalUser});
         socket.emit('activeUser', {count: footballTotalUser});
     });
 
     socket.on('disconnect', function(msg){
         footballTotalUser = footballTotalUser - 1;
-        console.log( people[socket.id] + ": has left to general channel");
-        console.log("channel user count:" + footballTotalUser);
+        console.log( people[socket.id] + ": has left to general room");
+        console.log("room user count:" + footballTotalUser);
         socket.broadcast.emit('left', {username:  people[socket.id], count: footballTotalUser});
     });
 
@@ -83,16 +83,16 @@ basketball.on('connection', function (socket) {
 
     socket.on('join', function(msg){
         basketballTotalUser = basketballTotalUser + 1;
-        console.log(username + ": has joined to general channel");
-        console.log("channel user count:" + basketballTotalUser);
+        console.log(username + ": has joined to general room");
+        console.log("room user count:" + basketballTotalUser);
         socket.broadcast.emit('join', {username: username, count: basketballTotalUser});
         socket.emit('activeUser', {count: basketballTotalUser});
     });
 
     socket.on('disconnect', function(msg){
         basketballTotalUser = basketballTotalUser - 1;
-        console.log( people[socket.id] + ": has left to general channel");
-        console.log("channel user count:" + basketballTotalUser);
+        console.log( people[socket.id] + ": has left to general room");
+        console.log("room user count:" + basketballTotalUser);
         socket.broadcast.emit('left', {username:  people[socket.id], count: basketballTotalUser});
     });
 
