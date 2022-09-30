@@ -15,9 +15,25 @@ app.set('view engine', 'ejs');
 let numUsers = 0;
 
 
-const general = io.of("/general");
-const football = io.of("/football");
-const basketball = io.of("/basketball");
+const Rooms = io.of("/1");
+const Rooms = io.of("/2");
+const Rooms = io.of("/3");
+const Rooms = io.of("/4");
+const Rooms = io.of("/5");
+const Rooms = io.of("/6");
+const Rooms = io.of("/7");
+const Rooms = io.of("/8");
+const Rooms = io.of("/9");
+
+const Rooms = io.of("/10");
+const Rooms = io.of("/11");
+const Rooms = io.of("/12");
+const Rooms = io.of("/13");
+const Rooms = io.of("/14");
+const Rooms = io.of("/15")
+const Rooms = io.of("/16");
+const Rooms = io.of("/17");
+const Rooms = io.of("/18");
 var people = {};
 
 let generalTotalUser = 0;
