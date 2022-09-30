@@ -4,7 +4,16 @@ var app = express();
 var server = require('http').Server(app);
 var io = require('socket.io')(server);
 
+app.set('port', (process.env.PORT || 3000));
+
 app.use(express.static(__dirname + '/public'));
+
+// views is directory for all template files
+app.set('views', __dirname + '/views');
+app.set('view engine', 'ejs');
+
+let numUsers = 0;
+
 
 const general = io.of("/general");
 const football = io.of("/football");
@@ -93,6 +102,8 @@ basketball.on('connection', function (socket) {
     });
 });
 
-http.listen(3000, function () {
-    console.log('listening on *:3000');
+
+server.listen(app.get('port'), function(){
+    console.log("Server is now running...");
+    console.log("Port is on", app.get('port'))
 });
