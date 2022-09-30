@@ -52,6 +52,8 @@ io.on('connection', (socket) => {
         socket.broadcast.emit('user joined', {
           username: socket.username,
           numUsers: numUsers
+		          socket.emit('activeUser', {count: generalTotalUser});
+
         });
     });
 
