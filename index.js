@@ -13,9 +13,13 @@ app.set('views', __dirname + '/views');
 app.set('view engine', 'ejs');
 
 
-const general = io.of("/general");
-const football = io.of("/football");
-const basketball = io.of("/18");
+const socket = io.of("/1");
+const socket = io.of("/2");
+const socket = io.of("/3");
+const socket = io.of("/4");
+const socket = io.of("/5");
+const socket = io.of("/6");
+const socket = io.of("/18");
 var people = {};
 
 let numUsers = 0;
@@ -48,6 +52,8 @@ io.on('connection', (socket) => {
         socket.broadcast.emit('user joined', {
           username: socket.username,
           numUsers: numUsers
+		  socket.emit('activeUser', {count: generalTotalUser});
+
         });
     });
 
