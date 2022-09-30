@@ -33,7 +33,7 @@ const Rooms = io.of("/14");
 const Rooms = io.of("/15")
 const Rooms = io.of("/16");
 const Rooms = io.of("/17");
-const Rooms = io.of("/18");
+const 18 = io.of("/18");
 var people = {};
 
 let generalTotalUser = 0;
