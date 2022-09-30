@@ -26,7 +26,13 @@ let numUsers = 0;
 
 io.on('connection', (socket) => {
     let addedUser = false;
-
+    socket.on('join', function(msg){
+        footballTotalUser =  1;
+        console.log(nickname);
+        console.log("channel user count:");
+        socket.broadcast.emit('join');
+        socket.emit('activeUser');
+    });
     // when the client emits 'new message', this listens and executes
     socket.on('new message', (data) => {
         // we tell the client to execute 'new message'
