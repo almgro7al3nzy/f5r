@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
   <head>
-    <title>Socket.IO chat</title>
+    <title>دردشة فخر</title>
     <style>
       :root {
         --body-bg: linear-gradient(135deg, #191a1b 0%, #000000 100%);
@@ -175,7 +175,7 @@
       <main class="msger-chat">
         <div class="msg right-msg">
           <div class="msg-bubble">
-            <div class="msg-text">Welcome to chat!</div>
+            <div class="msg-text">مرحبًا بك في الدردشة!</div>
           </div>
         </div>
       </main>
@@ -188,7 +188,7 @@
           maxlength="500"
         />
         <p id="character_limit">500</p>
-        <button type="submit" class="msger-send-btn">Send</button>
+        <button type="submit" class="msger-send-btn">إرسال</button>
       </form>
     </section>
   </body>
@@ -196,8 +196,8 @@
   <script src="/socket.io/socket.io.js"></script>
   <script>
     var socket = io();
-    const userName = prompt("Digite o seu nome: ");
-    const roomId = prompt("Digite a sala ao qual voce pretende conectar: ");
+    const userName = prompt("أدخل أسمك:");
+    const roomId = prompt("أدخل الغرفة التي تريد الاتصال بها:");
     let lastMessage = "me"
     socket.emit("join-room", { name: userName, roomId });
 
