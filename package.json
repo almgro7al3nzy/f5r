@@ -1,19 +1,29 @@
 {
-  "name": "webcage",
+  "name": "nodejs-socketio-server",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node index.js",
-    "dev": "index.js"
+    "start": "node src/index.js",
+    "dev": "nodemon src/index.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/iagxferreira/nodejs-socketio-server.git"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Iago Ferreira",
+  "license": "",
+  "bugs": {
+    "url": "https://github.com/iagxferreira/nodejs-socketio-server/issues"
+  },
+  "homepage": "https://github.com/iagxferreira/nodejs-socketio-server#readme",
   "dependencies": {
+    "cors": "^2.8.5",
+    "dotenv": "^8.2.0",
     "express": "^4.17.1",
-    "moment": "^2.29.1",
-    "socket.io": "^3.1.2"
+    "https": "^1.0.0",
+    "socket.io": "^3.1.0"
   },
   "devDependencies": {
     "nodemon": "^2.0.7"
