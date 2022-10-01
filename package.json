@@ -1,31 +1,24 @@
 {
-  "name": "nodejs-socketio-server",
+  "name": "voice-chat-server",
   "version": "1.0.0",
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "start": "ts-node src/index.html",
+    "dev": "nodemon src/index.ts",
+    "build": "tsc -p ."
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/iagxferreira/nodejs-socketio-server.git"
-  },
-  "keywords": [],
-  "author": "Iago Ferreira",
-  "license": "",
-  "bugs": {
-    "url": "https://github.com/iagxferreira/nodejs-socketio-server/issues"
-  },
-  "homepage": "https://github.com/iagxferreira/nodejs-socketio-server#readme",
+  "author": "",
+  "license": "ISC",
   "dependencies": {
-    "cors": "^2.8.5",
-    "dotenv": "^8.2.0",
+    "cookie-parser": "^1.4.5",
+    "ejs": "^3.1.6",
     "express": "^4.17.1",
-    "https": "^1.0.0",
-    "socket.io": "^3.1.0"
+    "socket.io": "^4.4.0"
   },
   "devDependencies": {
-    "nodemon": "^2.0.7"
+    "@types/node": "^14.14.31",
+    "ts-node": "^10.0.0",
+    "typescript": "^4.3.2"
   }
 }
