@@ -1,148 +1,133 @@
-// Setup basic express server
 const express = require('express');
-const app = express();
-const path = require('path');
-const server = require('http').createServer(app);
+const bodyParser = require('body-parser');
+const socketIo = require('socket.io')();
+const fs = require('fs');
+var app = express();
 
-const http = require('http').createServer(app);
-const io = require('socket.io')(server);
-const port = process.env.PORT || 3000;
+app.use(bodyParser.urlencoded({ extended: true }));
+app.use(bodyParser.json());
 
-server.listen(port, () => {
-  console.log('Server listening at port %d', port);
-});
-
-// التوجيه
-app.use(express.static(path.join(__dirname, 'public')));
-
-// غرفة الدردشة
-
-let numUsers = 0;
-
-io.on('connection', (socket) => {
-	var addedUser = false;
-	console.log('connect');
-
-	// عندما يرسل العميل "رسالة جديدة" ، فإن هذا يستمع وينفذ
-	socket.on('new message', (data) => {
-		//نطلب من العميل تنفيذ "رسالة جديدة"
-		socket.broadcast.emit('new message', {
-			username: socket.username,
-			message: data
-		});
-	});
-
-	// عندما يصدر العميل "إضافة مستخدم" ، فإن هذا يستمع وينفذ
-	socket.on('add user', (username) => {
-		if (addedUser) return;
-
-		// نقوم بتخزين اسم المستخدم في جلسة المقبس لهذا العميل
-		socket.username = username;
-		++numUsers;
-		addedUser = true;
-		socket.emit('login', {
-			numUsers: numUsers
-		});
-		// صدى عالميًا (جميع العملاء) قام الشخص بالاتصال به
-		socket.broadcast.emit('user joined', {
-			username: socket.username,
-			numUsers: numUsers
-		});
-	});
-
-	// عندما يرسل العميل "كتابة" ، نقوم ببثها للآخرين
-	socket.on('typing', () => {
-		socket.broadcast.emit('typing', {
-			username: socket.username
-		});
-	});
-
-	// عندما يرسل العميل عبارة "توقف عن الكتابة" ، نقوم ببثها للآخرين
-	socket.on('stop typing', () => {
-		socket.broadcast.emit('stop typing', {
-			username: socket.username
-		});
-	});
-
-	//عندما يقطع المستخدم .. تنفيذ هذا
-	socket.on('disconnect', () => {
-		if (addedUser) {
-			--numUsers;
-
-			// صدى عالميًا أن هذا العميل قد غادر
-			socket.broadcast.emit('user left', {
-				username: socket.username,
-				numUsers: numUsers
-			});
-		}
-	});
-
-	socket.on('fromClient', () => {
-		socket.broadcast.emit('fromClient', {
-			username: socket.username
-		});
-		console.log('from client');
-
-	});
-
-	socket.on('clientMessage', () => {
-		socket.broadcast.emit('clientMessage',{
-		});
-		console.log('connect');
-	});
+var server = app.listen(3000);
+var io = socketIo.listen(server);
 
 
-  // عندما يرسل العميل "رسالة جديدة" ، فإن هذا يستمع وينفذ
-  socket.on('new message', (data) => {
-    // نطلب من العميل تنفيذ "رسالة جديدة"
-    socket.broadcast.emit('new message', {
-      username: socket.username,
-      message: data
+io.on('connection', function (socket) {
+    //The moment one of your client connected to socket.io server it will obtain socket id
+    //Let's print this out.
+    console.log(`Connection : SocketId = ${socket.id}`)
+    //Since we are going to use userName through whole socket connection, Let's make it global.   
+    var listMessage = [];
+    var count = 0;
+
+    fs.readFile('./histories.json', 'utf8', (err, data) => {
+        if (err) {
+            console.log(`Error reading file from disk: ${err}`);
+        } else {
+            listMessage = JSON.parse(data)
+        }
     });
-  });
 
-  // عندما يصدر العميل "إضافة مستخدم" ، فإن هذا يستمع وينفذ
-  socket.on('add user', (username) => {
-    if (addedUser) return;
+    socket.on('subscribe', function (data) {
+        console.log('subscribe trigged')
+        const room_data = JSON.parse(data)
+        const roomName = room_data.roomName;
+        console.log(room_data)
+        socket.join(`${roomName}`)
+        io.to(`${roomName}`).emit('userWithChatHistory', listMessage);
+    })
 
-    // نقوم بتخزين اسم المستخدم في جلسة المقبس لهذا العميل
-    socket.username = username;
-    ++numUsers;
-    addedUser = true;
-    socket.emit('login', {
-      numUsers: numUsers
+    socket.on('unsubscribe', function (data) {
+        console.log('unsubscribe trigged')
+        const room_data = JSON.parse(data)
+        const userName = room_data.userName;
+        const roomName = room_data.roomName;
+
+        console.log(`Username : ${userName} leaved Room Name : ${roomName}`)
+        socket.to(`${roomName}`).emit('userLeftChatRoom', userName)
+        socket.leave(`${roomName}`)
+    })
+
+    socket.on('newMessage', function (data) {
+        const messageData = JSON.parse(data)
+        listMessage.push(messageData)
+        fs.writeFile('./histories.json', JSON.stringify(listMessage),
+            {
+                encoding: "utf8",
+                flag: "w",
+                mode: 0o666
+            },
+            (err) => {
+                if (err) {
+                    console.log(err);
+                }
+                else {
+                    const message = {
+                        userName: messageData.userName,
+                        messageContent: messageData.messageContent,
+                        roomName: messageData.roomName,
+                        type: messageData.type
+                    }
+                    io.to(`${messageData.roomName}`).emit('updateChat', JSON.stringify(message))
+                }
+            });
+    })
+
+    socket.on('typing', function (roomNumber) {
+        if (count === 0) {
+            count++
+            socket.to(`${roomNumber}`).emit('typing')
+        }
+    })
+
+    socket.on('stopTyping', function (roomNumber) {
+        count = 0
+        socket.to(`${roomNumber}`).emit('stopTyping')
+    })
+
+    socket.on("uploadMedia", function (data) {
+        var current = new Date();
+        const messageData = JSON.parse(data)
+        image = messageData.messageContent.replace(/^data:image\/png;base64,/, "");
+        console.log(messageData);
+        var mimeType = '';
+        if (messageData.type === 'image') {
+            mimeType = '.png'
+        } else if (messageData.type === 'video') {
+            mimeType = '.mp4'
+        } else {
+            mimeType = '.mp3'
+        }
+        fs.writeFile('socket_' + current.getSeconds() + current.getMinutes() + current.getTime() + current.getDay() + mimeType, image, 'base64', function (err) {
+            if (err) {
+                console.log(err)
+            } else {
+                listMessage.push(messageData)
+                fs.writeFile('./histories.json', JSON.stringify(listMessage),
+                    {
+                        encoding: "utf8",
+                        flag: "w",
+                        mode: 0o666
+                    },
+                    (err) => {
+                        if (err) {
+                            console.log(err);
+                        }
+                        else {
+                            const message = {
+                                userName: messageData.userName,
+                                messageContent: messageData.messageContent,
+                                roomName: messageData.roomName,
+                                type: messageData.type
+                            }
+                            io.to(`${messageData.roomName}`).emit('updateChat', JSON.stringify(message))
+                        }
+                    });
+            }
+        });
+
     });
-    //صدى عالميًا (جميع العملاء) قام الشخص بالاتصال به
-    socket.broadcast.emit('user joined', {
-      username: socket.username,
-      numUsers: numUsers
+
+    socket.on('disconnect', function () {
+        console.log("One of sockets disconnected from our server.")
     });
-  });
-
-  // عندما يرسل العميل "كتابة" ، نقوم ببثها للآخرين
-  socket.on('typing', () => {
-    socket.broadcast.emit('typing', {
-      username: socket.username
-    });
-  });
-
-  // عندما يرسل العميل عبارة "توقف عن الكتابة" ، نقوم ببثها للآخرين
-  socket.on('stop typing', () => {
-    socket.broadcast.emit('stop typing', {
-      username: socket.username
-    });
-  });
-
-  // عندما يقطع المستخدم .. تنفيذ هذا
-  socket.on('disconnect', () => {
-    if (addedUser) {
-      --numUsers;
-
-      // صدى عالميًا أن هذا العميل قد غادر
-      socket.broadcast.emit('user left', {
-        username: socket.username,
-        numUsers: numUsers
-      });
-    }
-  });
-});
+})
