@@ -4,70 +4,99 @@ const http = require('http');
 const express = require('express');
 const socketio = require('socket.io');
 const formatMessage = require('./helpers/formatDate')
-const {
-  getActiveUser,
-  exitRoom,
-  newUser,
-  getIndividualRoomUsers
-} = require('./helpers/userHelper');
 
-const app = express();
-const server = http.createServer(app);
-const io = socketio(server);
 
 //تعيين الدليل العام
 app.use(express.static(path.join(__dirname, 'public')));
 
 // سيتم تشغيل هذه الكتلة عند اتصال العميل
-io.on('connection', socket => {
-  socket.on('joinRoom', ({ username, room }) => {
-    const user = newUser(socket.id, username, room);
+const general = io.of("/general");
+const football = io.of("/football");
+const basketball = io.of("/basketball");
+var people = {};
 
-    socket.join(user.room);
+var generalTotalUser = 0;
+var footballTotalUser = 0;
+var basketballTotalUser = 0;
 
-    // عام أهلا وسهلا
-    socket.emit('message', formatMessage("WebCage", 'Messages are limited to this room! '));
+general.on('connection', function (socket) {
 
-    // بث في كل مرة يتصل فيها المستخدمون
-    socket.broadcast
-      .to(user.room)
-      .emit(
-        'message',
-        formatMessage("WebCage", `${user.username} has joined the room`)
-      );
+    nickname = socket.handshake.query['nickname'];
+    people[socket.id] = nickname;
 
-    //المستخدمون النشطون الحاليون واسم الغرفة
-    io.to(user.room).emit('roomUsers', {
-      room: user.room,
-      users: getIndividualRoomUsers(user.room)
+    socket.on('join', function(msg){
+        footballTotalUser =  1;
+        console.log(nickname);
+        console.log("channel user count:");
+        socket.broadcast.emit('join');
+        socket.emit('activeUser');
     });
-  });
 
-  //استمع إلى رسالة العميل
-  socket.on('chatMessage', msg => {
-    const user = getActiveUser(socket.id);
+    socket.on('disconnect', function(msg){
+        generalTotalUser = generalTotalUser - 1;
+        console.log( people[socket.id] + ": has left to general channel");
+        console.log("channel user count:" + generalTotalUser);
+        socket.broadcast.emit('left', {nickname:  people[socket.id], count: generalTotalUser});
+    });
 
-    io.to(user.room).emit('message', formatMessage(user.username, msg));
-  });
-
-  //يعمل عند قطع اتصال العميل
-  socket.on('disconnect', () => {
-    const user = exitRoom(socket.id);
-
-    if (user) {
-      io.to(user.room).emit(
-        'message',
-        formatMessage("WebCage", `${user.username} has left the room`)
-      );
-
-      // المستخدمون النشطون الحاليون واسم الغرفة
-      io.to(user.room).emit('roomUsers', {
-        room: user.room,
-        users: getIndividualRoomUsers(user.room)
-      });
-    }
-  });
+    socket.on('new_message', function(msg){
+        console.log(msg.nickname + " has send message: " + msg.message);
+        socket.broadcast.emit('new_message', {nickname: msg.nickname, message: msg.message});
+    });
 });
+
+football.on('connection', function (socket) {
+
+    nickname = socket.handshake.query['nickname'];
+    people[socket.id] = nickname;
+
+    socket.on('join', function(msg){
+        footballTotalUser = footballTotalUser + 1;
+        console.log(nickname + ": has joined to general channel");
+        console.log("channel user count:" + footballTotalUser);
+        socket.broadcast.emit('join', {nickname: nickname, count: footballTotalUser});
+        socket.emit('activeUser', {count: footballTotalUser});
+    });
+
+    socket.on('disconnect', function(msg){
+        footballTotalUser = footballTotalUser - 1;
+        console.log( people[socket.id] + ": has left to general channel");
+        console.log("channel user count:" + footballTotalUser);
+        socket.broadcast.emit('left', {nickname:  people[socket.id], count: footballTotalUser});
+    });
+
+    socket.on('new_message', function(msg){
+        console.log(msg.nickname + " has send message: " + msg.message);
+        socket.broadcast.emit('new_message', {nickname: msg.nickname, message: msg.message});
+    });
+});
+
+basketball.on('connection', function (socket) {
+
+    nickname = socket.handshake.query['nickname'];
+    people[socket.id] = nickname;
+
+    socket.on('join', function(msg){
+        basketballTotalUser = basketballTotalUser + 1;
+        console.log(nickname + ": has joined to general channel");
+        console.log("channel user count:" + basketballTotalUser);
+        socket.broadcast.emit('join', {nickname: nickname, count: basketballTotalUser});
+        socket.emit('activeUser', {count: basketballTotalUser});
+    });
+
+    socket.on('disconnect', function(msg){
+        basketballTotalUser = basketballTotalUser - 1;
+        console.log( people[socket.id] + ": has left to general channel");
+        console.log("channel user count:" + basketballTotalUser);
+        socket.broadcast.emit('left', {nickname:  people[socket.id], count: basketballTotalUser});
+    });
+
+    socket.on('new_message', function(msg){
+        console.log(msg.nickname + " has send message: " + msg.message);
+        socket.broadcast.emit('new_message', {nickname: msg.nickname, message: msg.message});
+    });
+});
+
 
 const PORT = process.env.PORT || 3000;
 
