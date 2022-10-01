@@ -19,6 +19,13 @@ app.get("/", (req, res) => {
 });
 
 io.on("connection", (client) => {
+    socket.on('join', function(msg){
+        footballTotalUser = footballTotalUser + 1;
+        console.log(nickname + ": has joined to general channel");
+        console.log("channel user count:" + footballTotalUser);
+        socket.broadcast.emit('join', {nickname: nickname, count: footballTotalUser});
+        socket.emit('activeUser', {count: footballTotalUser});
+    });
 
   client.on("join-room", ({ roomId, name}) => {
     if (roomId) {
