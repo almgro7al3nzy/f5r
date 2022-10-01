@@ -1,31 +1,25 @@
 {
-  "name": "nodejs-socketio-server",
+  "name": "server",
   "version": "1.0.0",
+  "engines": {
+    "node": "14.15.0"
+  },
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "node src/index.js",
-    "dev": "nodemon src/index.js"
+    "start": "node index.js",
+    "test": "echo \"Error: no test specified\" && exit 1"
   },
-  "repository": {
-    "type": "git",
-    "url": "git+https://github.com/iagxferreira/nodejs-socketio-server.git"
-  },
-  "keywords": [],
-  "author": "Iago Ferreira",
-  "license": "",
-  "bugs": {
-    "url": "https://github.com/iagxferreira/nodejs-socketio-server/issues"
-  },
-  "homepage": "https://github.com/iagxferreira/nodejs-socketio-server#readme",
+  "author": "",
+  "license": "ISC",
   "dependencies": {
     "cors": "^2.8.5",
-    "dotenv": "^8.2.0",
+    "dotenv": "^8.6.0",
     "express": "^4.17.1",
-    "https": "^1.0.0",
-    "socket.io": "^3.1.0"
-  },
-  "devDependencies": {
-    "nodemon": "^2.0.7"
+    "node-schedule": "^1.3.3",
+    "peer": "^0.6.1",
+    "randomstring": "^1.2.1",
+    "socket.io": "^2.4.1",
+    "twilio": "^3.67.0"
   }
 }
