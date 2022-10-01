@@ -6,18 +6,17 @@ const bodyParser = require("body-parser");
 
 const app = express();
 app.use(cors());
-
-// parse application/x-www-form-urlencoded
-// { extended: true } : support nested object
-// Returns middleware that ONLY parses url-encoded bodies and
-// This object will contain key-value pairs, where the value can be a
-// string or array(when extended is false), or any type (when extended is true)
+// parse application / x-www-form-urlencoded
+// {extended: true}: دعم الكائن المتداخل
+// يُرجع البرامج الوسيطة التي تقوم فقط بتحليل النصوص المشفرة بعنوان url و
+// سيحتوي هذا الكائن على أزواج مفتاح - قيمة ، حيث يمكن أن تكون القيمة a
+// سلسلة أو مصفوفة (عندما يكون التمديد خطأ) ، أو أي نوع (عندما يكون التمديد صحيحًا)
 app.use(bodyParser.urlencoded({ extended: true }));
 
-//This return middleware that only parses json and only looks at requests where the Content-type
-//header matched the type option.
-//When you use req.body -> this is using body-parser cause it is going to parse
-// the request body to the form we want
+// هذه البرامج الوسيطة المرتجعة التي تحلل json فقط وتنظر فقط في الطلبات التي يكون فيها نوع المحتوى
+// header يطابق خيار النوع.
+// عند استخدام req.body -> هذا باستخدام أداة تحليل الجسم لأنه سيتم تحليله
+// جسم الطلب للشكل الذي نريده
 app.use(bodyParser.json());
 
 const PORT = 3000;
@@ -31,10 +30,10 @@ const io = new Server(server, {
 });
 
 io.on("connection", function (socket) {
-  //The moment one of your client connected to socket.io server it will obtain socket id
-  //Let's print this out.
+// في اللحظة التي يتصل فيها أحد عميلك بخادم socket.io ، سيحصل على معرف المقبس
+  // دعونا نطبع هذا.
   console.log(`Connection : SocketId = ${socket.id}`);
-  //Since we are going to use userName through whole socket connection, Let's make it global.
+// نظرًا لأننا سنستخدم اسم المستخدم من خلال اتصال مقبس كامل ، فلنجعله عالميًا.
   var userName = "";
 
   socket.on("subscribe", function (data) {
@@ -45,11 +44,10 @@ io.on("connection", function (socket) {
 
     socket.join(`${roomName}`);
     console.log(`Username : ${userName} joined Room Name : ${roomName}`);
+// دع المستخدم الآخر يتلقى إشعارًا بأن المستخدم دخل الغرفة ؛
+    // يمكن استخدامه للإشارة إلى أن الشخص قد قرأ الرسائل. (مثل تحويل "غير المقروء" إلى "قراءة")
 
-    // Let the other user get notification that user got into the room;
-    // It can be use to indicate that person has read the messages. (Like turns "unread" into "read")
-
-    //TODO: need to chose
+// TODO: تحتاج إلى الاختيار
     //io.to : User who has joined can get a event;
     //socket.broadcast.to : all the users except the user who has joined will get the message
     // socket.broadcast.to(`${roomName}`).emit('newUserToChatRoom',userName);
@@ -75,8 +73,7 @@ io.on("connection", function (socket) {
     const roomName = messageData.roomName;
 
     console.log(`[Room Number ${roomName}] ${userName} : ${messageContent}`);
-    // Just pass the data that has been passed from the writer socket
-
+    //فقط قم بتمرير البيانات التي تم تمريرها من مأخذ توصيل الكاتب
     const chatData = {
       userName: userName,
       messageContent: messageContent,
@@ -84,7 +81,7 @@ io.on("connection", function (socket) {
     };
     socket.broadcast
       .to(`${roomName}`)
-      .emit("updateChat", JSON.stringify(chatData)); // Need to be parsed into Kotlin object in Kotlin
+      .emit("updateChat", JSON.stringify(chatData)); // يلزم تحليلها في كائن Kotlin في Kotlin
   });
 
   // socket.on('typing',function(roomNumber){ //Only roomNumber is needed here
