@@ -1,12 +1,9 @@
-require('dotenv').config()
 
-const express = require("express");   
-const socketio = require("socket.io"); 
-const http = require("http");
-const { ExpressPeerServer } = require('peer');
-const schedule = require('node-schedule');
-const controlRooms = require("./controllers/controlRooms"); 
-
+const path = require('path');
+const http = require('http');
+const express = require('express');
+const socketio = require('socket.io');
+const formatMessage = require('./helpers/formatDate')
 const general = io.of("/general");
 const football = io.of("/football");
 const basketball = io.of("/basketball");
@@ -94,8 +91,6 @@ basketball.on('connection', function (socket) {
     });
 });
 
+const PORT = process.env.PORT || 3000;
 
-const PORT = process.env.PORT || 5000; 
-server.listen(PORT, ()=>{
-    console.log(`Server started on port ${PORT}`); 
-});
+server.listen(PORT, () => console.log(`Server running on port ${PORT}`));
