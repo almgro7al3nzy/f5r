@@ -1,50 +1,148 @@
-import express from 'express';
-import http from 'http';
-import socketio from 'socket.io';
-import path from 'path';
+// Setup basic express server
+const express = require('express');
+const app = express();
+const path = require('path');
+const server = require('http').createServer(app);
 
-const port = 3000;
-const io: socketio.Server = new socketio.Server()
-const app: express.Application = express();
-const server: http.Server = http.createServer(app);
+const http = require('http').createServer(app);
+const io = require('socket.io')(server);
+const port = process.env.PORT || 3000;
 
-io.attach(server, {cors: { origin: '*' }});
-
-const sockets = new Map<string, socketio.Socket>();
-
-io.on("connection", (socket) => {
-    sockets.set(socket.id, socket);
-
-    socket.on("voiceData", (data) => {
-        //console.log("received voice data");
-
-        var newData = data.split(";");
-        newData[0] = "data:audio/ogg;";
-        newData = newData[0] + newData[1];
-
-        Array.from(sockets.values()).map(s => {
-            s.emit("voiceData", {id: socket.id, data: newData})
-        })
-
-    })
-
-    socket.on("disconnect", () => {
-        sockets.delete(socket.id)
-    })
-})
-
-app.set('view engine', 'ejs')
-
-//app.use(cookieParser());
-//app.use(bodyParser.json());
-
-app.use(express.static(__dirname + "/../" + '/public'));
-
-app.get('/', (req, res) => {
-    res.render('home', {a: 123});
+server.listen(port, () => {
+  console.log('Server listening at port %d', port);
 });
 
-server.listen(3000, () => {
-    console.log(`Listening at ${3000}`)
-})
+// التوجيه
+app.use(express.static(path.join(__dirname, 'public')));
 
+// غرفة الدردشة
+
+let numUsers = 0;
+
+io.on('connection', (socket) => {
+	var addedUser = false;
+	console.log('connect');
+
+	// عندما يرسل العميل "رسالة جديدة" ، فإن هذا يستمع وينفذ
+	socket.on('new message', (data) => {
+		//نطلب من العميل تنفيذ "رسالة جديدة"
+		socket.broadcast.emit('new message', {
+			username: socket.username,
+			message: data
+		});
+	});
+
+	// عندما يصدر العميل "إضافة مستخدم" ، فإن هذا يستمع وينفذ
+	socket.on('add user', (username) => {
+		if (addedUser) return;
+
+		// نقوم بتخزين اسم المستخدم في جلسة المقبس لهذا العميل
+		socket.username = username;
+		++numUsers;
+		addedUser = true;
+		socket.emit('login', {
+			numUsers: numUsers
+		});
+		// صدى عالميًا (جميع العملاء) قام الشخص بالاتصال به
+		socket.broadcast.emit('user joined', {
+			username: socket.username,
+			numUsers: numUsers
+		});
+	});
+
+	// عندما يرسل العميل "كتابة" ، نقوم ببثها للآخرين
+	socket.on('typing', () => {
+		socket.broadcast.emit('typing', {
+			username: socket.username
+		});
+	});
+
+	// عندما يرسل العميل عبارة "توقف عن الكتابة" ، نقوم ببثها للآخرين
+	socket.on('stop typing', () => {
+		socket.broadcast.emit('stop typing', {
+			username: socket.username
+		});
+	});
+
+	//عندما يقطع المستخدم .. تنفيذ هذا
+	socket.on('disconnect', () => {
+		if (addedUser) {
+			--numUsers;
+
+			// صدى عالميًا أن هذا العميل قد غادر
+			socket.broadcast.emit('user left', {
+				username: socket.username,
+				numUsers: numUsers
+			});
+		}
+	});
+
+	socket.on('fromClient', () => {
+		socket.broadcast.emit('fromClient', {
+			username: socket.username
+		});
+		console.log('from client');
+
+	});
+
+	socket.on('clientMessage', () => {
+		socket.broadcast.emit('clientMessage',{
+		});
+		console.log('connect');
+	});
+
+
+  // عندما يرسل العميل "رسالة جديدة" ، فإن هذا يستمع وينفذ
+  socket.on('new message', (data) => {
+    // نطلب من العميل تنفيذ "رسالة جديدة"
+    socket.broadcast.emit('new message', {
+      username: socket.username,
+      message: data
+    });
+  });
+
+  // عندما يصدر العميل "إضافة مستخدم" ، فإن هذا يستمع وينفذ
+  socket.on('add user', (username) => {
+    if (addedUser) return;
+
+    // نقوم بتخزين اسم المستخدم في جلسة المقبس لهذا العميل
+    socket.username = username;
+    ++numUsers;
+    addedUser = true;
+    socket.emit('login', {
+      numUsers: numUsers
+    });
+    //صدى عالميًا (جميع العملاء) قام الشخص بالاتصال به
+    socket.broadcast.emit('user joined', {
+      username: socket.username,
+      numUsers: numUsers
+    });
+  });
+
+  // عندما يرسل العميل "كتابة" ، نقوم ببثها للآخرين
+  socket.on('typing', () => {
+    socket.broadcast.emit('typing', {
+      username: socket.username
+    });
+  });
+
+  // عندما يرسل العميل عبارة "توقف عن الكتابة" ، نقوم ببثها للآخرين
+  socket.on('stop typing', () => {
+    socket.broadcast.emit('stop typing', {
+      username: socket.username
+    });
+  });
+
+  // عندما يقطع المستخدم .. تنفيذ هذا
+  socket.on('disconnect', () => {
+    if (addedUser) {
+      --numUsers;
+
+      // صدى عالميًا أن هذا العميل قد غادر
+      socket.broadcast.emit('user left', {
+        username: socket.username,
+        numUsers: numUsers
+      });
+    }
+  });
+});
