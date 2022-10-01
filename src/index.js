@@ -1,17 +1,16 @@
 const app = require("express")();
 const cors = require("cors");
 app.use(cors());
-
+const basketball = io.of("/1");
+const basketball = io.of("/2");
+const basketball = io.of("/3");
+const basketball = io.of("/4");
+const basketball = io.of("/5");
 const server = require("http").createServer(app);
 const io = require("socket.io")(server);
 require("dotenv/config");
-const general = io.of("/1"+"/2"+"/3"+"/4"+"/5"+);
 
-var people = {};
 
-var generalTotalUser = 0;
-var footballTotalUser = 0;
-var basketballTotalUser = 0;
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/templates/index.html");
 });
