@@ -1,7 +1,7 @@
 <html>
 
 <head>
-    <title>หน้าหลัก</title>
+    <title>الصفحة الرئيسية</title>
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" type="text/css" href="./css/main.css">
     <link rel="stylesheet" type="text/css" href="./css/chat.css">
@@ -18,20 +18,20 @@
             <span id="name-txt">
                 ชื่อ
             </span>
-            <span class="mobile-drop-menu active" onclick="openFrame('chat-frame')">แชท</span>
-            <span class="mobile-drop-menu" onclick="openFrame('room-list-frame')">ห้องแชท</span>
-            <span class="mobile-drop-menu" onclick="openFrame('member-list-frame')">ผู้ใช้งาน</span>
+            <span class="mobile-drop-menu active" onclick="openFrame('chat-frame')">دردشة</span>
+            <span class="mobile-drop-menu" onclick="openFrame('room-list-frame')">غرفة الدردشة</span>
+            <span class="mobile-drop-menu" onclick="openFrame('member-list-frame')">المستعمل</span>
             <div class="dropdown right-item">
                 <button class="dropbtn" onclick="toggleDropMenu('main-drop-menu')" style="font-size: 20px;padding:0 20px; background: none;">&equiv;
                 </button>
                 <div id="main-drop-menu" class="dropdown-content" style="font-weight: normal;">
-                    <span id="toggle-theme-btn">สลับธีม</span>
+                    <span id="toggle-theme-btn">تبديل الموضوع</span>
                 </div>
             </div>
         </div>
         <div class="head-screen">
             <div class="title">
-                ห้องหลัก
+                الغرفة الرئيسية
             </div>
         </div>
         <div class="content-screen">
@@ -40,22 +40,22 @@
                     <div id="chat-screen" class="chat-screen"></div>
                     <div class="chat-footer">
                         <input id="msg-input" placeholder="ข้อความ">
-                        <button id="send-btn">ส่ง</button>
+                        <button id="send-btn">إرسال</button>
                     </div>
                 </div>
             </div>
             <div class="option-screen">
                 <div class="room-list-frame">
-                    <div class="head-tag">ห้อง</div>
+                    <div class="head-tag">مجال</div>
                     <div id="room-list-box">
                     </div>
-                    <button id="create-room-btn">สร้างห้อง</button>
+                    <button id="create-room-btn">إنشاء غرفة</button>
                 </div>
                 <div class="member-list-frame">
-                    <div class="head-tag">ผู้ใช้งาน</div>
+                    <div class="head-tag">المستعمل</div>
                     <div id="member-list-box">
                     </div>
-                    <button id="join-room-btn">เข้าร่วมห้อง</button>
+                    <button id="join-room-btn">انضم إلى الغرفة</button>
                 </div>
             </div>
         </div>
