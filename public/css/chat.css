@@ -1,0 +1,304 @@
+.chat-box {
+    box-sizing: border-box;
+    padding: 0px;
+    width: 100%;
+    height: 100%;
+    position: absolute;
+    display: flex;
+    flex-direction: column;
+}
+
+.chat-screen {
+    box-sizing: border-box;
+    flex: 1;
+    padding: 10px;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    background: whitesmoke;
+}
+
+.chat-screen .msg-box {
+    box-sizing: border-box;
+    max-width: 100%;
+    padding: 10px;
+}
+
+.chat-screen .msg-box .name {
+    word-wrap: break-word;
+}
+
+.msg-box .msg-frame{
+    box-sizing: border-box;
+    display: inline-block;
+    max-width: 100%;
+    margin-top: 5px;
+    padding: 8px;
+    border-radius: 8px;
+    background: skyblue;
+    word-wrap: break-word;
+}
+
+.msg-box .msg-frame.my-msg{
+    box-shadow: inset 0 0 10px 0px;
+}
+
+.msg-box .msg-frame.whisper{
+    box-shadow: inset 0 0 10px 4px green;
+}
+
+.chat-screen .msg-box .msg {
+    box-sizing: border-box;
+    word-wrap: break-word;
+    color: black;
+}
+
+.chat-box .chat-footer {
+    box-sizing: border-box;
+    height: 40px;
+    display: flex;
+}
+
+.chat-footer input {
+    box-sizing: border-box;
+    flex: 1;
+    width: 1px;
+    height: 100%;
+    padding: 5px 10px;
+}
+
+.chat-footer button {
+    box-sizing: border-box;
+    width: 80px;
+    min-width: 1px;
+    height: 100%;
+    margin-left: 2px;
+    font-weight: bolder;
+    font-size: 20px;
+}
+
+.is-dark-mode .chat-screen {
+    background: #292929;
+}
+
+.is-dark-mode .msg-box .msg {
+    color: white;
+}
+
+.is-dark-mode .msg-box .msg-frame{
+    background: lightseagreen;
+}
+
+.is-dark-mode .chat-box input{
+    color: white;
+    background: #1e1e1e;
+    border-color: gray;
+}
+
+/*<OPTION>*/
+
+.option-screen {
+    flex: 2;
+    display: flex;
+    flex-direction: row;
+    padding-left: 5px;
+    overflow: hidden;
+}
+
+.room-list-frame,
+.member-list-frame {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+    padding: 0px 5px;
+}
+
+#room-list-box,
+#member-list-box {
+    flex: 1;
+    word-wrap: break-word;
+    overflow-x: hidden;
+    overflow-y: scroll;
+    background: #e0e0e0;
+    padding: 5px;
+    margin: 5px 0px;
+}
+
+.option-screen button {
+    height: 40px;
+}
+
+.option-screen .head-tag {
+    background: #aaa;
+    padding: 10px;
+    text-align: center;
+}
+
+.option-screen .item {
+    display: block;
+    border-radius: 8px;
+    margin-bottom: 2px;
+    padding: 5px;
+    line-height: 20px;
+    background: cadetblue;
+}
+.option-screen .item:hover {
+    box-shadow: inset 0 0 10px 0;
+}
+
+.member-list-frame .item {
+    background: #bbb;
+}
+
+.option-screen .item .item-name {
+    font-weight: bolder;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+
+.room-list-frame .room-id::before {
+    content: "#";
+}
+
+.option-screen .item .room-id {
+    font-size: 12px;
+}
+
+.option-screen .item img {
+    width: 20px;
+    height: 20px;
+    margin: 0px 0px;
+}
+
+.room-list-frame img,
+.room-list-frame span {
+    float: right;
+}
+
+.option-screen .item .user-id {
+    display: inline-block;
+    max-width: 100%;
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+}
+
+.is-dark-mode .option-screen .item {
+    background: teal;
+}
+
+.is-dark-mode .member-list-frame .item {
+    background: #555;
+}
+
+.is-dark-mode .option-screen .head-tag {
+    background: #3a3a3a;
+}
+
+.is-dark-mode #room-list-box,
+.is-dark-mode #member-list-box {
+    background: #292929;
+}
+
+/*</OPTION>*/
+
+/*<POPUP>*/
+#modal-main-popup {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background: rgba(0, 0, 0, 0.5);
+    z-index: 1;
+    width: 100vw;
+    height: 100vh;
+  }
+  
+  .content-main-popup {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: cadetblue;
+    padding: 20px 20px;
+    border-radius: 8px;
+  }
+  
+  .content-main-popup .title {
+    text-align: center;
+    font-weight: bolder;
+    margin-bottom: 5px;
+  }
+  
+  .content-main-popup input {
+    width: 100%;
+    display: block;
+    padding: 10px;
+    margin-bottom: 10px;
+    border: none;
+  }
+  
+  .content-main-popup button {
+    display: block;
+    margin-top: 10px;
+    margin-left: 50%;
+    text-align: center;
+    transform: translate(-50%, 0);
+  }
+  
+  #modal-main-popup .wrong-txt {
+    margin-left: 50%;
+    max-width: 50%;
+    word-wrap: break-word;
+    transform: translate(-50%, 0);
+    display: inline-block;
+    text-align: center;
+    border-radius: 5px;
+    margin-top: 5px;
+    background: black;
+    color: red;
+  }
+  
+  .is-dark-mode #modal-main-popup {
+    background: rgba(255, 255, 255, 0.5);
+  }
+  
+  .is-dark-mode .content-main-popup {
+    background: darkslategrey;
+  }
+  
+  .is-dark-mode .content-main-popup input {
+    background: #111;
+    color: white;
+  }
+  
+  /*</POPUP>*/
+
+@media only screen and (max-width: 767px) {
+    .head-screen .title {
+        font-size: 18px;
+    }
+    .head-bar #name-txt {
+        font-size: 14px;
+    }
+    button {
+        font-size: 10px;
+    }
+    .option-screen{
+        display: none;
+    }
+    .member-list-frame {
+        display: none;
+    }
+    .room-list-frame{
+        display: none;
+    }
+    span.mobile-drop-menu{
+        font-size: 10px;
+        display: block;
+    }
+}
+
+@media only screen and (min-width: 768px) {
+}

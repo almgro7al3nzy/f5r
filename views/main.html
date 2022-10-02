@@ -1,0 +1,229 @@
+<html>
+
+<head>
+    <title>หน้าหลัก</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" type="text/css" href="./css/main.css">
+    <link rel="stylesheet" type="text/css" href="./css/chat.css">
+    <script src="./socket.io/socket.io.js"></script>
+    <script src="./jquery/jquery.min.js"></script>
+    <script src="./js/client/main.js"></script>
+    <script src="./js/client/theme.js"></script>
+    <script src="./js/client/chat.js"></script>
+</head>
+
+<body>
+    <div class="main-screen">
+        <div class="head-bar">
+            <span id="name-txt">
+                ชื่อ
+            </span>
+            <span class="mobile-drop-menu active" onclick="openFrame('chat-frame')">แชท</span>
+            <span class="mobile-drop-menu" onclick="openFrame('room-list-frame')">ห้องแชท</span>
+            <span class="mobile-drop-menu" onclick="openFrame('member-list-frame')">ผู้ใช้งาน</span>
+            <div class="dropdown right-item">
+                <button class="dropbtn" onclick="toggleDropMenu('main-drop-menu')" style="font-size: 20px;padding:0 20px; background: none;">&equiv;
+                </button>
+                <div id="main-drop-menu" class="dropdown-content" style="font-weight: normal;">
+                    <span id="toggle-theme-btn">สลับธีม</span>
+                </div>
+            </div>
+        </div>
+        <div class="head-screen">
+            <div class="title">
+                ห้องหลัก
+            </div>
+        </div>
+        <div class="content-screen">
+            <div class="chat-frame" style="flex:2;position: relative;">
+                <div class="chat-box">
+                    <div id="chat-screen" class="chat-screen"></div>
+                    <div class="chat-footer">
+                        <input id="msg-input" placeholder="ข้อความ">
+                        <button id="send-btn">ส่ง</button>
+                    </div>
+                </div>
+            </div>
+            <div class="option-screen">
+                <div class="room-list-frame">
+                    <div class="head-tag">ห้อง</div>
+                    <div id="room-list-box">
+                    </div>
+                    <button id="create-room-btn">สร้างห้อง</button>
+                </div>
+                <div class="member-list-frame">
+                    <div class="head-tag">ผู้ใช้งาน</div>
+                    <div id="member-list-box">
+                    </div>
+                    <button id="join-room-btn">เข้าร่วมห้อง</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-main-popup" hidden>
+        <div class="content-main-popup"></div>
+    </div>
+
+
+
+    <script>
+        var SOCKET = io();
+
+        // authorization
+        $(() => {
+            SOCKET.emit('token', { token: sessionStorage.getItem("token") })
+        });
+        SOCKET.on('token', (data) => {
+            console.log(data);
+            if (data.status !== "success") {
+                window.location.replace("./");
+            } else {
+                sessionStorage.setItem("id", data.id)
+                tokenSuccess();
+            }
+            SOCKET.emit('check room', { token: TOKEN });
+        });
+
+        var ID, TOKEN;
+        function tokenSuccess() {
+            ID = sessionStorage.getItem("id");
+            TOKEN = sessionStorage.getItem("token");
+            document.title = ID + " " + document.title;
+            $('#name-txt').html(ID);
+        }
+
+        $(function () {
+            $('#send-btn').on('click', function () {
+                var msg = $('#msg-input').val();
+                $('#msg-input').val("");
+                if (msg.startsWith("/กระซิบ ") || msg.startsWith("/whisper ") || msg.startsWith("/wh ") || msg.startsWith("/กซ ")) {
+                    try {
+                        let msgSplit = msg.split(" ");
+                        let userRes = msgSplit[1];
+                        msg = msgSplit[2];
+                        for (let i = 3; i < msgSplit.length; i++) {
+                            msg += " " + msgSplit[i];
+                        }
+                        SOCKET.emit('send whisper', { token: TOKEN, msg: msg, userRes: userRes });
+                    } catch (error) {
+                        console.log(error);
+                    }
+                } else {
+                    if (msg.startsWith("\\")) {
+                        msg = msg.substr(1);
+                    }
+                    SOCKET.emit('send', { token: TOKEN, msg: msg });
+                }
+            });
+            $('#create-room-btn').on('click', function () {
+                popupCreateRoom();
+            });
+            $('#join-room-btn').on('click', function () {
+                popupJoinRoom();
+            });
+            $('#modal-main-popup').on('click', function () {
+                if (event.target.id === "modal-main-popup") {
+                    hideMainPopup();
+                }
+            });
+        });
+
+        function createRoom() {
+            let roomName = $('#room-name-input').val();
+            let password = $('#room-password-input').val();
+            SOCKET.emit('create room', { token: TOKEN, roomName: roomName, password: password });
+        }
+
+        function joinRoom(roomId, lock) {
+            if (lock) {
+                popupJoinRoom(roomId);
+            } else {
+                SOCKET.emit("join room", { token: TOKEN, roomId: roomId });
+            }
+        }
+
+        function joinRoomLock() {
+            let roomId = $("#join-room-id-input").val();
+            let password = $("#join-room-password-input").val();
+            SOCKET.emit("join room", { token: TOKEN, roomId: roomId, password: password });
+        }
+
+        // SOCKET RECEIV************************
+        SOCKET.on('send-res', (data) => {
+            var id = data.id;
+            var msg = data.msg;
+            chatBoxAddMsg("chat-screen", id, msg);
+        });
+        SOCKET.on('send whisper', (data) => {
+            let id = "";
+            if (data.status == "reci") {
+                id = data.id + " กระซิบคุณ";
+            } else if (data.status == "send") {
+                id = "คุณกระซิบ " + data.id;
+            } else {
+                return;
+            }
+            let msg = data.msg;
+            chatBoxAddMsg("chat-screen", id, msg, "whisper");
+        });
+        SOCKET.on('user list', (data) => {
+            let userList = data.users;
+            $("#member-list-box").html("");
+            for (let i = 0; i < userList.length; i++) {
+                $("#member-list-box").append(
+                    "<div class='item dropdown' id='mem" + i + "'>" +
+                    "<img src='./images/man-ico.png'>" +
+                    "<div class='user-id'>" + userList[i] + "</div>" +
+                    "</div>"
+                );
+            }
+        });
+        SOCKET.on('create room', (data) => {
+            let roomId = data.roomId;
+            if (roomId != -1) {
+                hideMainPopup();
+                sessionStorage.setItem("room", roomId);
+                window.location.replace("./chatroom");
+            } else {
+                $('#modal-main-popup').find('.wrong-txt').html('ผิดพลาด');
+            }
+        });
+        SOCKET.on('room list', (data) => {
+            let roomList = data.rooms;
+            console.log(data);
+            $("#room-list-box").html("");
+            for (let i = 0; i < roomList.length; i++) {
+                $("#room-list-box").append(
+                    '<div class="item dropdown" onclick="joinRoom(' + roomList[i].id + ',' + roomList[i].lock + ')">' +
+                    '<span>' + roomList[i].members.length + '</span>' +
+                    '<img src="./images/man-ico.png">' +
+                    ((roomList[i].lock) ? '<img id="num-of-mem" src="./images/lock-ico.png">' : "") +
+                    '<div class="item-name">' +
+                    roomList[i].name +
+                    '</div>' +
+                    '<div class="room-id">' + roomList[i].id + '</div>' +
+                    '</div>'
+                );
+            }
+        });
+        SOCKET.on('join room', (data) => {
+            let roomId = data.roomId;
+            if (roomId >= 0) {
+                hideMainPopup();
+                sessionStorage.setItem("room", roomId);
+                window.location.replace("./chatroom");
+            } else {
+                $('#modal-main-popup').find('.wrong-txt').html('ผิดพลาด');
+            }
+        });
+        SOCKET.on('check room', (data) => {
+            if (data.roomId !== -1) {
+                sessionStorage.setItem("room", data.roomId);
+                window.location.replace("./chatroom");
+            }
+        });
+    </script>
+</body>
+
+</html>
