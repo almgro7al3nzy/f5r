@@ -158,9 +158,9 @@
         SOCKET.on('send whisper', (data) => {
             let id = "";
             if (data.status == "reci") {
-                id = data.id + " กระซิบคุณ";
+                id = data.id + " يهمس لك";
             } else if (data.status == "send") {
-                id = "คุณกระซิบ " + data.id;
+                id = "أنت تهمس " + data.id;
             } else {
                 return;
             }
@@ -186,7 +186,7 @@
                 sessionStorage.setItem("room", roomId);
                 window.location.replace("./chatroom");
             } else {
-                $('#modal-main-popup').find('.wrong-txt').html('ผิดพลาด');
+                $('#modal-main-popup').find('.wrong-txt').html('خطأ');
             }
         });
         SOCKET.on('room list', (data) => {
@@ -214,7 +214,7 @@
                 sessionStorage.setItem("room", roomId);
                 window.location.replace("./chatroom");
             } else {
-                $('#modal-main-popup').find('.wrong-txt').html('ผิดพลาด');
+                $('#modal-main-popup').find('.wrong-txt').html('خطأ');
             }
         });
         SOCKET.on('check room', (data) => {

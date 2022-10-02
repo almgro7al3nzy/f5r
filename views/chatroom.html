@@ -36,7 +36,7 @@
         </div>
         <div class="head-screen">
             <div class="title">
-                ห้องแชท
+                غرفة الدردشة
             </div>
         </div>
         <div class="content-screen">
@@ -129,7 +129,7 @@
             if (roomId >= 0) {
                 hideMainPopup();
             } else {
-                $('#modal-main-popup').find('.wrong-txt').html('ผิดพลาด');
+                $('#modal-main-popup').find('.wrong-txt').html('خطأ');
             }
         });
         SOCKET.on('send in room', (data) => {
@@ -140,9 +140,9 @@
         SOCKET.on('send whisper', (data) => {
             let id = "";
             if (data.status == "reci") {
-                id = "กระซิบจาก > " + data.id;
+                id = "همسة من > " + data.id;
             } else if (data.status == "send") {
-                id = "กระซิบ > " + data.id;
+                id = "همسة > " + data.id;
             } else {
                 return;
             }
@@ -153,7 +153,7 @@
             ROOM = data.roomId;
             if (data.roomId !== -1) {
                 console.log($(".head-screen > .title"));
-                $(".head-screen > .title").text("ห้องแชท " + data.roomName + " #" + ROOM);
+                $(".head-screen > .title").text("غرفة الدردشة " + data.roomName + " #" + ROOM);
                 sessionStorage.setItem("room", ROOM);
             } else {
                 sessionStorage.removeItem("room");
